@@ -1,26 +1,39 @@
 import type { OnLoadResult } from 'esbuild';
+import type { RawSourceMap } from './sourcemap';
 
 import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import * as sass from 'sass-embedded';
+import * as sourcemap from './sourcemap';
+
+type CompileResult = Omit<sass.CompileResult, 'sourceMap'> & {
+  sourceMap?: RawSourceMap;
+};
 
 export type SassOptions = {
   depedencies?: string[];
+  minify?: boolean;
+  sourcemap?: boolean;
 };
 
 export default class Sass {
-  private readonly _cache: Map<string, { css: string; lastModified: number }>;
+  private readonly _cache: Map<string, { contents: string; lastModified: number }>;
   private readonly _depedencies: string[];
+  private readonly _sourcemap: boolean;
+  private readonly _minify: boolean;
 
   private async _getLastModified(file: string) {
     const stats = await Promise.all([file, ...this._depedencies].map(x => fsp.stat(x)));
     return stats.reduce((acc, cur) => acc + cur.mtimeMs, 0);
   }
 
-  protected _compile(file: string) {
+  protected _compile(file: string): Promise<CompileResult> {
     return sass.compileAsync(file, {
+      style: this._minify ? 'compressed' : 'expanded',
+      sourceMap: this._sourcemap,
+      sourceMapIncludeSources: true,
       loadPaths: this._depedencies.map(dir => path.join(process.cwd(), dir)),
       importers: [{
         load: async url => ({
@@ -43,6 +56,9 @@ export default class Sass {
 
   constructor(options: SassOptions) {
     this._depedencies = options.depedencies ?? [];
+    this._minify = !!options.minify;
+    this._sourcemap = !!options.sourcemap;
+
     this._cache = new Map();
   }
 
@@ -50,13 +66,17 @@ export default class Sass {
     const cached = this._cache.get(file);
     const lastModified = await this._getLastModified(file);
 
-    if (cached?.lastModified === lastModified) return { loader: 'css', contents: cached.css };
+    if (cached?.lastModified === lastModified) return { loader: 'css', contents: cached.contents };
 
     try {
-      const { css } = await this._compile(file);
-      this._cache.set(file, { css, lastModified });
+      const { css, sourceMap } = await this._compile(file);
+      const contents = sourceMap ?
+        `${css}\n${sourcemap.toUrl(sourceMap)}` :
+        css;
 
-      return { loader: 'css', contents: css };
+      this._cache.set(file, { contents, lastModified });
+
+      return { loader: 'css', contents };
     } catch (err) {
       return {
         errors: [{

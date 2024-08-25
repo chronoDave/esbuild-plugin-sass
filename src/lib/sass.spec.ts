@@ -30,3 +30,21 @@ test('[sass.render] returns cached file if not modified', async t => {
 
   t.end();
 });
+
+test('[sass.render] returns sourcemap if enabled', async t => {
+  const sass = new Sass({
+    depedencies: ['test/assets/lib'],
+    minify: false,
+    sourcemap: true
+  });
+
+  const { contents } = await sass.render(path.join(process.cwd(), 'test/assets/index.scss'));
+
+  if (typeof contents === 'string') {
+    t.true(contents?.includes('sourceMappingURL'));
+  } else {
+    t.fail('did not return string');
+  }
+
+  t.end();
+});

@@ -22,13 +22,17 @@ export default [{
   output: [{
     file: output('js'),
     exports: 'auto',
-    format: 'es'
+    format: 'esm'
+  }, {
+    file: output('cjs'),
+    exports: 'auto',
+    format: 'cjs'
   }]
 }, {
   input,
   plugins: [dts()],
   output: {
     file: output('d.ts'),
-    format: 'es'
+    format: 'esm'
   }
 }];
