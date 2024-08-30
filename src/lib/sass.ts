@@ -12,6 +12,12 @@ type CompileResult = Omit<sass.CompileResult, 'sourceMap'> & {
   sourceMap?: RawSourceMap;
 };
 
+type Cache = {
+  contents: string;
+  watchFiles: string[];
+  lastModified: number;
+};
+
 export type SassOptions = {
   depedencies?: string[];
   minify?: boolean;
@@ -19,7 +25,7 @@ export type SassOptions = {
 };
 
 export default class Sass {
-  private readonly _cache: Map<string, { contents: string; lastModified: number }>;
+  private readonly _cache: Map<string, Cache>;
   private readonly _depedencies: string[];
   private readonly _sourcemap: boolean;
   private readonly _minify: boolean;
@@ -70,15 +76,16 @@ export default class Sass {
 
     try {
       const { css, loadedUrls, sourceMap } = await this._compile(file);
+      const watchFiles = loadedUrls.map(x => fileURLToPath(x));
       const contents = sourceMap ?
         `${css}\n${sourcemap.toUrl(sourceMap)}` :
         css;
 
-      this._cache.set(file, { contents, lastModified });
+      this._cache.set(file, { contents, watchFiles, lastModified });
 
       return {
         loader: 'css',
-        watchFiles: loadedUrls.map(x => fileURLToPath(x)),
+        watchFiles,
         contents
       };
     } catch (err) {
