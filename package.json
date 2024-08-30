@@ -26,7 +26,7 @@
     "lint": "eslint src",
     "build": "rollup -c",
     "test": "node scripts/tape.js && tape build/**/*.spec.js",
-    "preversion": "npm run lint && npm run test",
+    "preversion": "npm run lint && npm run test && npm run build",
     "postversion": "npm publish"
   },
   "peerDependencies": {
