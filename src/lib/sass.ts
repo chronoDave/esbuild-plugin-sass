@@ -72,7 +72,13 @@ export default class Sass {
     const cached = this._cache.get(file);
     const lastModified = await this._getLastModified(file);
 
-    if (cached?.lastModified === lastModified) return { loader: 'css', contents: cached.contents };
+    if (cached?.lastModified === lastModified) {
+      return {
+        loader: 'css',
+        watchFiles: cached.watchFiles,
+        contents: cached.contents
+      };
+    }
 
     try {
       const { css, loadedUrls, sourceMap } = await this._compile(file);
