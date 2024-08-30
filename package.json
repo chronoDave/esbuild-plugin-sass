@@ -1,6 +1,6 @@
 {
   "name": "@chronocide/esbuild-plugin-sass",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "type": "module",
   "types": "dist/esbuild-plugin-sass.d.ts",
   "exports": {
