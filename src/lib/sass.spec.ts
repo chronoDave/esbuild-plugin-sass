@@ -48,3 +48,13 @@ test('[sass.render] returns sourcemap if enabled', async t => {
 
   t.end();
 });
+
+test('[sass.render] returns watchFiles', async t => {
+  const sass = new Sass({ depedencies: ['test/assets/lib'] });
+
+  const { watchFiles } = await sass.render(path.join(process.cwd(), 'test/assets/index.scss'));
+
+  t.true(watchFiles?.length ?? 0 > 0);
+
+  t.end();
+});
