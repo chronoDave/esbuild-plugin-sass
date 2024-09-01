@@ -1,17 +1,17 @@
 <div align="center">
   <h1>@chronocide/esbuild-plugin-sass</h1>
-  <p><a href="https://sass-lang.com/">SASS</a> plugin for <a href="https://esbuild.github.io/">esbuild</a>.</p>
+  <p><a href="https://sass-lang.com/">Sass</a> plugin for <a href="https://esbuild.github.io/">esbuild</a>.</p>
 </div>
 
 <div align="center">
   <a href="/LICENSE">
     <img alt="License GPLv3" src="https://img.shields.io/badge/license-GPLv3-blue.svg" />
   </a>
-  <a href="https://www.npmjs.com/package/@chronocide/spider">
-    <img alt="NPM" src="https://img.shields.io/npm/v/@chronocide/spider?label=npm">
+  <a href="https://www.npmjs.com/package/@chronocide/esbuild-plugin-sass">
+    <img alt="NPM" src="https://img.shields.io/npm/v/@chronocide/esbuild-plugin-sass?label=npm">
   </a>
-  <a href="https://packagephobia.com/result?p=@chronocide/spider">
-    <img alt="Bundle size" src="https://packagephobia.com/badge?p=@chronocide/spider">
+  <a href="https://packagephobia.com/result?p=@chronocide/esbuild-plugin-sass">
+    <img alt="Install size" src="https://packagephobia.com/badge?p=@chronocide/esbuild-plugin-sass">
   </a>
 </div>
 
@@ -41,56 +41,20 @@ esbuild.build({
 
 ### Options
 
+Supports most [sass](https://sass-lang.com/documentation/js-api/interfaces/options/) options.
+
 | Option | Type | Default
 | - | - | - |
-| `depedencies` | `string[]` | `[]` |
-| `minify` | `boolean` | `false` |
-| `sourcemap` | `boolean` | `false` |
-
-#### `depedencies`
-
-List of paths used by rules like `@use` and `@import`, similar to [`loadPaths`](https://sass-lang.com/documentation/js-api/interfaces/options/#loadPaths).
-
-```JS
-import esbuild from 'esbuild';
-import sass from 'esbuild-plugin-sass';
-
-esbuild.build({
-  ...
-  plugins: [sass({
-    depedencies: ['src/scss/lib']
-  })]
-});
-```
-
-#### `minify`
-
-Minifies output, similar to [`style`](https://sass-lang.com/documentation/js-api/interfaces/options/#style).
-
-```JS
-import esbuild from 'esbuild';
-import sass from 'esbuild-plugin-sass';
-
-esbuild.build({
-  ...
-  plugins: [sass({
-    minify: true
-  })]
-});
-```
-
-#### `sourcemap`
-
-Generates sourcemap, similar to [`sourceMap`](https://sass-lang.com/documentation/js-api/interfaces/options/#sourceMap). Sourcemaps will always be generated inline and [include sources](https://sass-lang.com/documentation/js-api/interfaces/options/#sourceMapIncludeSources).
-
-```JS
-import esbuild from 'esbuild';
-import sass from 'esbuild-plugin-sass';
-
-esbuild.build({
-  ...
-  plugins: [sass({
-    sourcemap: true
-  })]
-});
-```
+| [`depedencies`](https://sass-lang.com/documentation/js-api/interfaces/options/#loadPaths) | `string[]` | `[]` |
+| [`minify`](https://sass-lang.com/documentation/js-api/interfaces/options/#style) | `boolean` | `false` |
+| [`sourcemap`](https://sass-lang.com/documentation/js-api/interfaces/options/#sourceMap) | `boolean` | `false` |
+| [`plugins`](https://sass-lang.com/documentation/js-api/interfaces/options/#functions) | `Record<string, sass.CustomFunction<'async'>>` | `undefined` |
+| [`importers`](https://sass-lang.com/documentation/js-api/interfaces/options/#importers) | `(sass.NodePackageImporter \| sass.Importer<'async'>)[]` | `[]` |
+| [`alert.ascii`](https://sass-lang.com/documentation/js-api/interfaces/options/#alertAscii) | `boolean` | `undefined` |
+| [`alert.colour`](https://sass-lang.com/documentation/js-api/interfaces/options/#alertColor) | `boolean` | `undefined` |
+| [`deprecations.fatal`](https://sass-lang.com/documentation/js-api/interfaces/options/#fatalDeprecations) | `(sass.DeprecationOrId \| sass.Version)[]` | `undefined` |
+| [`deprecations.future`](https://sass-lang.com/documentation/js-api/interfaces/options/#futureDeprecations) | `sass.DeprecationOrId[]` | `undefined` |
+| [`deprecations.ignore`](https://sass-lang.com/documentation/js-api/interfaces/options/#silenceDeprecations) | `sass.DeprecationOrId[]` | `undefined` |
+| [`quiet`](https://sass-lang.com/documentation/js-api/interfaces/options/#quietDeps) | `boolean` | `undefined` |
+| [`logger`](https://sass-lang.com/documentation/js-api/interfaces/options/#logger) | `sass.Logger` | `undefined` |
+| [`verbose`](https://sass-lang.com/documentation/js-api/interfaces/options/#verbose) | `boolean` | `undefined` |
