@@ -11,7 +11,7 @@ export default class SassDebug extends Sass {
     return result;
   }
 
-  constructor(options: SassOptions) {
+  constructor(options?: SassOptions) {
     super(options);
 
     this.compilations = 0;

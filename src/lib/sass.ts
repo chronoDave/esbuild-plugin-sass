@@ -61,12 +61,12 @@ export default class Sass {
   private readonly _minify: boolean;
   private readonly _importers: (sass.NodePackageImporter | sass.Importer<'async'>)[];
   private readonly _cache: Map<string, Cache>;
+  private readonly _quiet: boolean;
+  private readonly _verbose: boolean;
   private readonly _plugins?: Record<string, sass.CustomFunction<'async'>>;
   private readonly _alert?: SassOptions['alert'];
   private readonly _deprecations?: SassOptions['deprecations'];
   private readonly _logger?: sass.Logger;
-  private readonly _quiet?: boolean;
-  private readonly _verbose?: boolean;
 
   private async _getLastModified(...files: string[]) {
     const stats = await Promise.all([...files, ...this._depedencies].map(x => fsp.stat(x)));
@@ -107,17 +107,17 @@ export default class Sass {
     });
   }
 
-  constructor(options: SassOptions) {
-    this._depedencies = options.depedencies ?? [];
-    this._minify = !!options.minify;
-    this._sourcemap = !!options.sourcemap;
-    this._plugins = options.plugins;
-    this._importers = options.importers ?? [];
-    this._alert = options.alert;
-    this._deprecations = options.deprecations;
-    this._quiet = options.quiet;
-    this._logger = options.logger;
-    this._verbose = options.verbose;
+  constructor(options?: SassOptions) {
+    this._depedencies = options?.depedencies ?? [];
+    this._minify = !!options?.minify;
+    this._sourcemap = !!options?.sourcemap;
+    this._plugins = options?.plugins;
+    this._importers = options?.importers ?? [];
+    this._alert = options?.alert;
+    this._deprecations = options?.deprecations;
+    this._quiet = options?.quiet ?? false;
+    this._verbose = options?.verbose ?? false;
+    this._logger = options?.logger;
 
     this._cache = new Map();
   }

@@ -58,3 +58,42 @@ test('[sass.compile] returns depedencies', async t => {
 
   t.end();
 });
+
+test('[sass.compile] returns urls as plaintext', async t => {
+  const sass = new Sass();
+
+  try {
+    const { css } = await sass.compile(path.join(process.cwd(), 'test/assets/components/image.scss'));
+
+    t.true(css.includes('.png'), 'has plaintext link');
+  } catch (err) {
+    t.fail((err as Error).message);
+  }
+
+  t.end();
+});
+
+test('[sass.compile] invalidates cache on error', async t => {
+  const sass = new Sass({ depedencies: ['test/assets/lib'] });
+
+  const file = path.join(process.cwd(), 'test/assets/index.scss');
+  await fsp.appendFile(file, 'a {};');
+
+  await sass.compile(file);
+  await fsp.appendFile(file, 'a');
+
+  try {
+    await sass.compile(path.join(process.cwd(), 'test/assets/index.scss'));
+
+    t.fail('expected to throw');
+  } catch {}
+
+  // eslint-disable-next-line @stylistic/ts/quotes
+  await fsp.writeFile(file, "@use './components/container.scss';\n");
+
+  const { css } = await sass.compile(path.join(process.cwd(), 'test/assets/index.scss'));
+
+  t.false(css.includes('a {};'), 'does not cache invalid result');
+
+  t.end();
+});
