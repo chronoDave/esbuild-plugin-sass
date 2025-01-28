@@ -3,7 +3,12 @@ import type { Plugin } from 'esbuild';
 
 import Sass from './lib/sass';
 
-export default (options: SassOptions): Plugin => ({
+export type Options = SassOptions & {
+  /** If true, returns CSS string */
+  inline?: boolean;
+};
+
+export default (options: Options): Plugin => ({
   name: '@chronocide/esbuild-plugin-sass',
   setup: build => {
     const sass = new Sass(options);
@@ -12,7 +17,7 @@ export default (options: SassOptions): Plugin => ({
       const { css, depedencies } = await sass.compile(args.path);
 
       return {
-        loader: 'css',
+        loader: options.inline ? 'text' : 'css',
         watchFiles: depedencies,
         contents: css
       };

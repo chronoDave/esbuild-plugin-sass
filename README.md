@@ -35,8 +35,13 @@ import sass from 'esbuild-plugin-sass';
 
 esbuild.build({
   ...
-  plugins: [sass()]
+  plugins: [sass()] // index.css (css loader)
 });
+
+esbuild.build({
+  ...
+  plugins: [sass({ inline: true })] // inline style (text loader)
+})
 ```
 
 ### Options
