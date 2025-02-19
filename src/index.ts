@@ -63,6 +63,7 @@ export default (options?: Options): Plugin => ({
       };
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     build.onDispose(async () => {
       await context.dispose();
     });

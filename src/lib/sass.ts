@@ -18,7 +18,7 @@ export type SassOptions = {
   /** https://sass-lang.com/documentation/js-api/interfaces/options/#functions */
   plugins?: Record<string, sass.CustomFunction<'async'>>;
   /** https://sass-lang.com/documentation/js-api/interfaces/options/#importers */
-  importers?: (sass.NodePackageImporter | sass.Importer<'async'>)[];
+  importers?: Array<sass.NodePackageImporter | sass.Importer<'async'>>;
   alert?: {
     /** https://sass-lang.com/documentation/js-api/interfaces/options/#alertAscii */
     ascii?: boolean;
@@ -27,7 +27,7 @@ export type SassOptions = {
   };
   deprecations?: {
     /** https://sass-lang.com/documentation/js-api/interfaces/options/#fatalDeprecations */
-    fatal?: (sass.DeprecationOrId | sass.Version)[];
+    fatal?: Array<sass.DeprecationOrId | sass.Version>;
     /** https://sass-lang.com/documentation/js-api/interfaces/options/#futureDeprecations */
     future?: sass.DeprecationOrId[];
     /** https://sass-lang.com/documentation/js-api/interfaces/options/#silenceDeprecations */
@@ -132,7 +132,7 @@ export default class Sass {
   /**
    * @see https://sass-lang.com/documentation/js-api/classes/asynccompiler/#dispose
    */
-  dispose() {
+  async dispose() {
     return this._compiler.dispose();
   }
 }

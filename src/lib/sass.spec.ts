@@ -7,7 +7,7 @@ test('[sass.compile] compiles sass file', async t => {
   const context = await sass.context({ depedencies: ['test/assets/lib'] });
   const { css } = await context.compile(path.join(process.cwd(), 'test/assets/index.scss'));
 
-  t.true(css && css?.length > 0, 'compiles css');
+  t.true(css && css.length > 0, 'compiles css');
 
   await context.dispose();
 
@@ -23,7 +23,7 @@ test('[sass.compile] returns sourcemap if enabled', async t => {
   const { css } = await context.compile(path.join(process.cwd(), 'test/assets/index.scss'));
 
   if (typeof css === 'string') {
-    t.true(css?.includes('sourceMappingURL'));
+    t.true(css.includes('sourceMappingURL'));
   } else {
     t.fail('did not return string');
   }
@@ -37,7 +37,7 @@ test('[sass.compile] returns depedencies', async t => {
   const context = await sass.context({ depedencies: ['test/assets/lib'] });
   const { depedencies } = await context.compile(path.join(process.cwd(), 'test/assets/index.scss'));
 
-  t.true(depedencies?.length ?? 0 > 0);
+  t.true(depedencies.length > 0);
 
   await context.dispose();
 
