@@ -17,7 +17,7 @@
 
 ## Why?
 
-[`esbuild-sass-plugin`](https://github.com/glromeo/esbuild-sass-plugin) makes use of [`tea`](https://github.com/glromeo/esbuild-sass-plugin/blob/main/tea.yaml), which is a [crypto scam](https://www.web3isgoinggreat.com/?collection=teaxyz). I do not wish to support such packages and therefore made my own.
+[`esbuild-sass-plugin`](https://github.com/glromeo/esbuild-sass-plugin) makes use of [`tea`](https://github.com/glromeo/esbuild-sass-plugin/blob/main/tea.yaml), which is [crypto spam](https://www.web3isgoinggreat.com/?collection=teaxyz). I do not wish to support such packages and therefore made my own.
 
 ## Installation
 

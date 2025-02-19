@@ -1,17 +1,8 @@
-import type { RawSourceMap } from './sourcemap';
-
+import * as sass from 'sass-embedded';
+import path from 'path';
 import fs from 'fs';
 import fsp from 'fs/promises';
-import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import * as sass from 'sass-embedded';
-import * as sourcemap from './sourcemap';
-
-type Cache = {
-  contents: string;
-  watchFiles: string[];
-  lastModified: number;
-};
 
 export type SassOptions = {
   /** https://sass-lang.com/documentation/js-api/interfaces/options/#loadPaths */
@@ -50,99 +41,98 @@ export type SassOptions = {
   verbose?: boolean;
 };
 
-export type CompileResult = {
+export type Warning = {
+  message: string;
+  options: (
+    | {
+      deprecation: true;
+      deprecationType: sass.Deprecation;
+    }
+    | { deprecation: false }
+  ) & { span?: sass.SourceSpan; stack?: string };
+};
+
+export type SassResult = {
   css: string;
   depedencies: string[];
+  warnings?: Warning[];
 };
 
 export default class Sass {
-  private readonly _depedencies: string[];
-  private readonly _sourcemap: boolean;
-  private readonly _minify: boolean;
-  private readonly _importers: (sass.NodePackageImporter | sass.Importer<'async'>)[];
-  private readonly _cache: Map<string, Cache>;
-  private readonly _quiet: boolean;
-  private readonly _verbose: boolean;
-  private readonly _plugins?: Record<string, sass.CustomFunction<'async'>>;
-  private readonly _alert?: SassOptions['alert'];
-  private readonly _deprecations?: SassOptions['deprecations'];
-  private readonly _logger?: sass.Logger;
+  static async context(options?: SassOptions) {
+    const compiler = await sass.initAsyncCompiler();
 
-  private async _getLastModified(...files: string[]) {
-    const stats = await Promise.all([...files, ...this._depedencies].map(x => fsp.stat(x)));
-    return stats.reduce((acc, cur) => acc + cur.mtimeMs, 0);
+    return new Sass(compiler, options);
   }
 
-  protected _compile(file: string): Promise<Omit<sass.CompileResult, 'sourceMap'> & { sourceMap?: RawSourceMap }> {
-    return sass.compileAsync(file, {
-      style: this._minify ? 'compressed' : 'expanded',
-      sourceMap: this._sourcemap,
-      sourceMapIncludeSources: true,
-      loadPaths: this._depedencies.map(dir => path.join(process.cwd(), dir)),
-      functions: this._plugins,
-      alertAscii: this._alert?.ascii,
-      alertColor: this._alert?.colour,
-      fatalDeprecations: this._deprecations?.fatal,
-      futureDeprecations: this._deprecations?.future,
-      silenceDeprecations: this._deprecations?.ignore,
-      logger: this._logger,
-      quietDeps: this._quiet,
-      verbose: this._verbose,
+  private readonly _compiler: sass.AsyncCompiler;
+  private readonly _options?: SassOptions;
+
+  private constructor(compiler: sass.AsyncCompiler, options?: SassOptions) {
+    this._compiler = compiler;
+    this._options = options;
+  }
+
+  /**
+   * Compile raw CSS string
+   * 
+   * @see https://sass-lang.com/documentation/js-api/functions/compileasync/
+  */
+  async compile(root: string): Promise<SassResult> {
+    const warnings: Warning[] = [];
+    const importers = this._options?.importers ?? [];
+    const result = await this._compiler.compileAsync(root, {
+      style: this._options?.minify ? 'compressed' : 'expanded',
+      sourceMap: this._options?.sourcemap,
+      sourceMapIncludeSources: this._options?.sourcemap,
+      loadPaths: this._options?.depedencies?.map(depedency => path.join(process.cwd(), depedency)),
+      functions: this._options?.plugins,
+      alertAscii: this._options?.alert?.ascii,
+      alertColor: this._options?.alert?.colour,
+      fatalDeprecations: this._options?.deprecations?.fatal,
+      futureDeprecations: this._options?.deprecations?.future,
+      silenceDeprecations: this._options?.deprecations?.ignore,
+      logger: this._options?.logger ?? {
+        warn: (message, options) => {
+          warnings.push({ message, options });
+        }
+      },
+      quietDeps: this._options?.quiet,
+      verbose: this._options?.verbose,
       importers: [{
         load: async url => ({
           contents: await fsp.readFile(fileURLToPath(url), 'utf-8'),
           syntax: url.pathname.endsWith('.scss') ? 'scss' : 'indented'
         }),
         canonicalize: url => {
-          const dirs = [path.parse(file).dir, ...this._depedencies];
+          const depedencies = this._options?.depedencies ?? [];
+          const dirs = [root, ...depedencies];
 
           for (const dir of dirs) {
             const file = path.join(dir, url);
+
             if (fs.existsSync(file)) return pathToFileURL(file);
           }
 
           return null;
         }
-      }, ...this._importers]
-    });
-  }
-
-  constructor(options?: SassOptions) {
-    this._depedencies = options?.depedencies ?? [];
-    this._minify = !!options?.minify;
-    this._sourcemap = !!options?.sourcemap;
-    this._plugins = options?.plugins;
-    this._importers = options?.importers ?? [];
-    this._alert = options?.alert;
-    this._deprecations = options?.deprecations;
-    this._quiet = options?.quiet ?? false;
-    this._verbose = options?.verbose ?? false;
-    this._logger = options?.logger;
-
-    this._cache = new Map();
-  }
-
-  async compile(file: string): Promise<CompileResult> {
-    const cache = this._cache.get(file);
-    const lastModified = await this._getLastModified(file, ...cache?.watchFiles ?? []);
-
-    if (cache?.lastModified === lastModified) return { depedencies: cache.watchFiles, css: cache.contents };
-
-    const { css, loadedUrls, sourceMap } = await this._compile(file);
-    const watchFiles = loadedUrls.map(x => fileURLToPath(x));
-    const contents = sourceMap ?
-      `${css}\n${sourcemap.toUrl(sourceMap)}` :
-      css;
-
-    this._cache.set(file, {
-      contents,
-      watchFiles,
-      // watchFiles will not be included in lastModified if cache is empty
-      lastModified: cache ?
-        lastModified :
-        await this._getLastModified(file, ...watchFiles)
+      }, ...importers]
     });
 
-    return { css: contents, depedencies: watchFiles };
+    let { css } = result;
+    if (this._options?.sourcemap) css += `\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,${Buffer.from(JSON.stringify(result.sourceMap), 'utf-8').toString('base64')} */`;
+
+    return {
+      css,
+      warnings,
+      depedencies: result.loadedUrls.map(url => fileURLToPath(url))
+    };
+  }
+
+  /**
+   * @see https://sass-lang.com/documentation/js-api/classes/asynccompiler/#dispose
+   */
+  dispose() {
+    return this._compiler.dispose();
   }
 }

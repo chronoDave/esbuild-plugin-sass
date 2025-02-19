@@ -1,25 +1,19 @@
-import { build } from 'esbuild';
+import esbuild from 'esbuild';
 import path from 'path';
-import fs from 'fs';
+import fsp from 'fs/promises';
 
 const outdir = path.join(process.cwd(), 'build');
 
-build({
-  entryPoints: fs.readdirSync('src', { recursive: true })
-    .reduce((acc, cur) => {
-      if (/\.spec\.ts$/u.test(cur)) acc.push(path.join('src', cur));
-      return acc;
-    }, []),
+await fsp.rm(outdir, { force: true, recursive: true });
+await esbuild.build({
+  entryPoints: ['src/**/*.spec.ts'],
   outdir,
   bundle: true,
   external: [
     'tape',
+    'esbuild',
     'sass-embedded'
   ],
   platform: 'node',
-  format: 'esm',
-  plugins: [{
-    name: 'clean',
-    setup: () => fs.rmSync(outdir, { force: true, recursive: true })
-  }]
+  format: 'esm'
 });
