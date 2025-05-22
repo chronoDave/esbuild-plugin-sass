@@ -1,8 +1,8 @@
-import test from 'tape';
+import test from 'node:test';
 import fs from 'fs';
 import path from 'path';
 
-import struct from './index.struct';
+import struct from './index.struct.ts';
 
 test('[esbuild-plugin-sass] transforms scss into css', async t => {
   const { build, cleanup } = struct();
@@ -12,12 +12,10 @@ test('[esbuild-plugin-sass] transforms scss into css', async t => {
     await build([input], { depedencies: ['test/assets/lib'] });
 
     const out = path.resolve(process.cwd(), 'tmp/index.css');
-    t.true(fs.existsSync(out), 'writes file');
+    t.assert.equal(fs.existsSync(out), true, 'writes file');
   } catch (err) {
-    t.fail((err as Error).message);
+    t.assert.fail(err as Error);
   } finally {
     await cleanup();
   }
-
-  t.end();
 });

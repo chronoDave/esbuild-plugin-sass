@@ -1,8 +1,7 @@
-import type { SassOptions } from './lib/sass';
 import type { Plugin } from 'esbuild';
+import type { SassOptions } from './lib/sass.ts';
 
-import sass from './lib/sass';
-import formatWarning from './lib/warning';
+import sass from './lib/sass.ts';
 
 export type Options = SassOptions & {
   /** If true, returns CSS string */
@@ -25,7 +24,22 @@ export default (options?: Options): Plugin => ({
             ...options?.depedencies ?? []
           ],
           loader: options?.inline ? 'text' : 'css',
-          warnings: result.warnings?.map(formatWarning(args.path))
+          warnings: result.warnings?.map(warning => {
+            if (!warning.options.span) return { text: warning.message };
+            return {
+              text: warning.message,
+              location: {
+                file: warning.options.span.url?.pathname ?? args.path,
+                line: warning.options.span.start.line,
+                column: warning.options.span.start.column,
+                lineText: warning.options.span.text
+              },
+              detail: {
+                deprecation: warning.options.deprecation,
+                stack: warning.options.stack
+              }
+            };
+          })
         };
       } catch (err) {
         return {
@@ -35,7 +49,6 @@ export default (options?: Options): Plugin => ({
       }
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     build.onDispose(async () => {
       await context.dispose();
     });

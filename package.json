@@ -20,12 +20,12 @@
   "author": "Chronocide",
   "license": "GPL-3.0",
   "engines": {
-    "node": ">=20.16.0"
+    "node": ">=22.13.1"
   },
   "scripts": {
     "lint": "eslint src",
     "build": "rollup -c",
-    "test": "node scripts/tape.js && tape build/**/*.spec.js",
+    "test": "node --experimental-strip-types --no-warnings --test src/**/*.spec.ts",
     "preversion": "npm run lint && npm run test && npm run build",
     "postversion": "npm publish"
   },
@@ -34,14 +34,13 @@
   },
   "devDependencies": {
     "@chronocide/eslint-config": "github:chronoDave/eslint-config",
-    "@types/tape": "^5.6.4",
+    "@types/node": "^22.15.21",
     "esbuild": "^0.25.0",
     "eslint": "^9.9.0",
     "rollup": "^4.22.4",
     "rollup-plugin-dts": "^6.1.1",
     "rollup-plugin-esbuild": "^6.1.1",
     "sass-embedded": "^1.77.8",
-    "tape": "^5.8.1",
     "typescript": "^5.5.4"
   }
 }

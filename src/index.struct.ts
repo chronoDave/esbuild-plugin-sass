@@ -1,10 +1,10 @@
-import type { Options } from './index';
+import type { Options } from './index.ts';
 
 import esbuild from 'esbuild';
 import path from 'path';
 import fsp from 'fs/promises';
 
-import sass from './index';
+import sass from './index.ts';
 
 export default () => {
   const outdir = 'tmp';

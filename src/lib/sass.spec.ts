@@ -1,17 +1,15 @@
-import test from 'tape';
+import test from 'node:test';
 import path from 'path';
 
-import sass from './sass';
+import sass from './sass.ts';
 
 test('[sass.compile] compiles sass file', async t => {
   const context = await sass.context({ depedencies: ['test/assets/lib'] });
   const { css } = await context.compile(path.join(process.cwd(), 'test/assets/index.scss'));
 
-  t.true(css && css.length > 0, 'compiles css');
+  t.assert.equal(css && css.length > 0, true, 'compiles css');
 
   await context.dispose();
-
-  t.end();
 });
 
 test('[sass.compile] returns sourcemap if enabled', async t => {
@@ -23,25 +21,21 @@ test('[sass.compile] returns sourcemap if enabled', async t => {
   const { css } = await context.compile(path.join(process.cwd(), 'test/assets/index.scss'));
 
   if (typeof css === 'string') {
-    t.true(css.includes('sourceMappingURL'));
+    t.assert.equal(css.includes('sourceMappingURL'), true);
   } else {
-    t.fail('did not return string');
+    t.assert.fail('did not return string');
   }
 
   await context.dispose();
-
-  t.end();
 });
 
 test('[sass.compile] returns depedencies', async t => {
   const context = await sass.context({ depedencies: ['test/assets/lib'] });
   const { depedencies } = await context.compile(path.join(process.cwd(), 'test/assets/index.scss'));
 
-  t.true(depedencies.length > 0);
+  t.assert.equal(depedencies.length > 0, true);
 
   await context.dispose();
-
-  t.end();
 });
 
 test('[sass.compile] returns urls as plaintext', async t => {
@@ -50,12 +44,10 @@ test('[sass.compile] returns urls as plaintext', async t => {
   try {
     const { css } = await context.compile(path.join(process.cwd(), 'test/assets/components/image.scss'));
 
-    t.true(css.includes('.png'), 'has plaintext link');
+    t.assert.equal(css.includes('.png'), true, 'has plaintext link');
   } catch (err) {
-    t.fail((err as Error).message);
+    t.assert.fail(err as Error);
   }
 
   await context.dispose();
-
-  t.end();
 });
