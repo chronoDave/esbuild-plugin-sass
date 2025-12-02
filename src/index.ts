@@ -13,7 +13,7 @@ export default (options?: Options): Plugin => ({
   setup: async build => {
     const context = await sass.context(options);
 
-    build.onLoad({ filter: /\.scss$/u }, async args => {
+    build.onLoad({ filter: /\.scss$/ }, async args => {
       try {
         const result = await context.compile(args.path);
 
